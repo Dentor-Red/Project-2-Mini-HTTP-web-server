@@ -92,6 +92,7 @@ int main() {
 
         // Create an HTTP response
         std::string body;
+        std::string status = "200 OK";
 
         if (path == "/") {
             std::ifstream file("public/index.html");
@@ -118,6 +119,8 @@ int main() {
             }
         }
         else {
+            status = "404 Not Found";
+
             std::ifstream file("public/404.html");
 
             if (file) {
@@ -131,7 +134,7 @@ int main() {
         }
 
         std::string response =
-            "HTTP/1.1 200 OK\r\n"
+            "HTTP/1.1 " + status + "\r\n"
             "Content-Type: text/html\r\n"
             "Content-Length: " + std::to_string(body.length()) + "\r\n"
             "Connection: close\r\n"
