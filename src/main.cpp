@@ -106,13 +106,28 @@ int main() {
             }
         }
         else if (path == "/about") {
-            body = "This is my C++ web server project.";
-        }
-        else if (path == "/test") {
-            body = "Test page works!";
+            std::ifstream file("public/about.html");
+
+            if (file) {
+                std::stringstream contents;
+                contents << file.rdbuf();
+                body = contents.str();
+            }
+            else {
+                body = "Could not open about.html";
+            }
         }
         else {
-            body = "404 Page Not Found";
+            std::ifstream file("public/404.html");
+
+            if (file) {
+                std::stringstream contents;
+                contents << file.rdbuf();
+                body = contents.str();
+            }
+            else {
+                body = "Could not open 404.html";
+            }
         }
 
         std::string response =
