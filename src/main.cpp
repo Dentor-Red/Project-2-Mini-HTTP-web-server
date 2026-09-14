@@ -93,6 +93,7 @@ int main() {
         // Create an HTTP response
         std::string body;
         std::string status = "200 OK";
+        std::string contentType = "text/html";
 
         if (path == "/") {
             std::ifstream file("public/index.html");
@@ -118,6 +119,20 @@ int main() {
                 body = "Could not open about.html";
             }
         }
+        else if (path == "/style.css") {
+            contentType = "text/css";
+
+            std::ifstream file("public/style.css");
+
+            if (file) {
+                std::stringstream contents;
+                contents << file.rdbuf();
+                body = contents.str();
+            }
+            else {
+                body = "Could not open style.css";
+            }
+        }
         else {
             status = "404 Not Found";
 
@@ -135,7 +150,7 @@ int main() {
 
         std::string response =
             "HTTP/1.1 " + status + "\r\n"
-            "Content-Type: text/html\r\n"
+            "Content-Type: " + contentType + "\r\n"
             "Content-Length: " + std::to_string(body.length()) + "\r\n"
             "Connection: close\r\n"
             "\r\n" +
