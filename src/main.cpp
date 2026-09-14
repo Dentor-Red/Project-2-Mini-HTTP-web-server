@@ -4,6 +4,8 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <sstream>
+#include <fstream>
+
 
 
 int main() {
@@ -92,7 +94,16 @@ int main() {
         std::string body;
 
         if (path == "/") {
-            body = "Welcome to the home page!";
+            std::ifstream file("public/index.html");
+
+            if (file) {
+                std::stringstream contents;
+                contents << file.rdbuf();
+                body = contents.str();
+            }
+            else {
+                body = "Could not open index.html";
+            }
         }
         else if (path == "/about") {
             body = "This is my C++ web server project.";
@@ -106,7 +117,7 @@ int main() {
 
         std::string response =
             "HTTP/1.1 200 OK\r\n"
-            "Content-Type: text/plain\r\n"
+            "Content-Type: text/html\r\n"
             "Content-Length: " + std::to_string(body.length()) + "\r\n"
             "Connection: close\r\n"
             "\r\n" +
