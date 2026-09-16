@@ -147,6 +147,14 @@ int main() {
                 body = "Could not open script.js";
             }
         }
+        else if (path == "/api/status") {
+            contentType = "application/json";
+
+            body = R"({
+            "status": "Server is running",
+            "message": "Hello from the C++ web server!"
+            })";
+        }
         else {
             status = "404 Not Found";
 
