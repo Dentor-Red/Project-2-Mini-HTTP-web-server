@@ -133,6 +133,20 @@ int main() {
                 body = "Could not open style.css";
             }
         }
+        else if (path == "/script.js") {
+            contentType = "application/javascript";
+
+            std::ifstream file("public/script.js");
+
+            if (file) {
+                std::stringstream contents;
+                contents << file.rdbuf();
+                body = contents.str();
+            }
+            else {
+                body = "Could not open script.js";
+            }
+        }
         else {
             status = "404 Not Found";
 
@@ -148,6 +162,7 @@ int main() {
             }
         }
 
+        // Construct the full HTTP response
         std::string response =
             "HTTP/1.1 " + status + "\r\n"
             "Content-Type: " + contentType + "\r\n"
