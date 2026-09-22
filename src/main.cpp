@@ -1,12 +1,34 @@
 #include <iostream>
+#include <string>
 #include <cstring>
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <sstream>
 #include <fstream>
+#include <filesystem>
+#include <netinet/in.h>
 
+// This is used to determine the content type based on the file extension.
+std::string getContentType(const std::string& path) {
+    if (path.size() >= 5 && path.compare(path.size() - 5, 5, ".html") == 0) {
+        return "text/html";
+    }
+    else if (path.size() >= 4 && path.compare(path.size() - 4, 4, ".css") == 0) {
+        return "text/css";
+    }
+    else if (path.size() >= 3 && path.compare(path.size() - 3, 3, ".js") == 0) {
+        return "application/javascript";
+    }
+    else if (path.size() >= 5 && path.compare(path.size() - 5, 5, ".json") == 0) {
+        return "application/json";
+    }
+    else if (path.size() >= 4 && path.compare(path.size() - 4, 4, ".txt") == 0) {
+        return "text/plain";
+    }
 
+    return "application/octet-stream";
+}
 
 int main() {
     // Create a TCP socket
@@ -95,78 +117,45 @@ int main() {
         std::string status = "200 OK";
         std::string contentType = "text/html";
 
-        if (path == "/") {
-            std::ifstream file("public/index.html");
-
-            if (file) {
-                std::stringstream contents;
-                contents << file.rdbuf();
-                body = contents.str();
-            }
-            else {
-                body = "Could not open index.html";
-            }
-        }
-        else if (path == "/about") {
-            std::ifstream file("public/about.html");
-
-            if (file) {
-                std::stringstream contents;
-                contents << file.rdbuf();
-                body = contents.str();
-            }
-            else {
-                body = "Could not open about.html";
-            }
-        }
-        else if (path == "/style.css") {
-            contentType = "text/css";
-
-            std::ifstream file("public/style.css");
-
-            if (file) {
-                std::stringstream contents;
-                contents << file.rdbuf();
-                body = contents.str();
-            }
-            else {
-                body = "Could not open style.css";
-            }
-        }
-        else if (path == "/script.js") {
-            contentType = "application/javascript";
-
-            std::ifstream file("public/script.js");
-
-            if (file) {
-                std::stringstream contents;
-                contents << file.rdbuf();
-                body = contents.str();
-            }
-            else {
-                body = "Could not open script.js";
-            }
-        }
-        else if (path == "/api/status") {
+        if (path == "/api/status") {
             contentType = "application/json";
 
             body = R"({
             "status": "Server is running",
             "message": "Hello from the C++ web server!"
-            })";
+        })";
         }
         else {
-            status = "404 Not Found";
+            // Convert "/" into "/index.html"
+            if (path == "/") {
+                path = "/index.html";
+            }
 
-            std::ifstream file("public/404.html");
+            // Build the path to the requested file
+            std::string filePath = "public" + path;
+
+            std::ifstream file(filePath);
 
             if (file) {
                 std::stringstream contents;
                 contents << file.rdbuf();
                 body = contents.str();
+
+                contentType = getContentType(filePath);
             }
             else {
-                body = "Could not open 404.html";
+                status = "404 Not Found";
+
+                std::ifstream notFoundFile("public/404.html");
+
+                if (notFoundFile) {
+                    std::stringstream contents;
+                    contents << notFoundFile.rdbuf();
+                    body = contents.str();
+                }
+                else {
+                    body = "404 Not Found";
+                }
             }
         }
 
