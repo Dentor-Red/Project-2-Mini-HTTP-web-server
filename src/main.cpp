@@ -110,6 +110,26 @@ int main() {
 
             std::cout << "Method: " << method << "\n";
             std::cout << "Path: " << path << "\n";
+
+            if (method != "GET" && method != "POST") {
+                std::string response =
+                    "HTTP/1.1 405 Method Not Allowed\r\n"
+                    "Content-Type: text/plain\r\n"
+                    "Content-Length: 22\r\n"
+                    "Connection: close\r\n"
+                    "\r\n"
+                    "Method Not Allowed";
+
+                send(
+                    clientSocket,
+                    response.c_str(),
+                    response.length(),
+                    0
+                );
+
+                close(clientSocket);
+                continue;
+            }
         }
 
         // Create an HTTP response
