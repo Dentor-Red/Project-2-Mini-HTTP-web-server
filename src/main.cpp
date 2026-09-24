@@ -93,6 +93,7 @@ int main() {
         );
 
         std::string path = "/";
+        std::string method;
 
         if (bytesReceived > 0) {
             std::cout << "\nReceived request:\n";
@@ -100,7 +101,6 @@ int main() {
 
             std::istringstream requestStream(buffer);
 
-            std::string method;
             std::string requestedPath;
             std::string version;
 
@@ -145,6 +145,57 @@ int main() {
             "message": "Hello from the C++ web server!"
         })";
         }
+
+        else if (path == "/api/message" && method == "POST") {
+            contentType = "text/html";
+
+            // Find the beginning of the form data
+            std::string request(buffer);
+            size_t bodyStart = request.find("\r\n\r\n");
+
+            if (bodyStart != std::string::npos) {
+                std::string formData = request.substr(bodyStart + 4);
+
+                // Look for "message="
+                size_t messageStart = formData.find("message=");
+
+                if (messageStart != std::string::npos) {
+                    std::string message = formData.substr(messageStart + 8);
+
+                    // Basic form decoding
+                    size_t position = 0;
+
+                    while ((position = message.find('+', position)) != std::string::npos) {
+                        message.replace(position, 1, " ");
+                        position++;
+                    }
+
+                    body =
+                        "<!DOCTYPE html>"
+                        "<html>"
+                        "<head>"
+                        "<title>Message Received</title>"
+                        "<link rel=\"stylesheet\" href=\"/style.css\">"
+                        "</head>"
+                        "<body>"
+                        "<h1>Message Received</h1>"
+                        "<p>Your message was:</p>"
+                        "<p>" + message + "</p>"
+                        "<a href=\"/\">Back to Home</a>"
+                        "</body>"
+                        "</html>";
+                }
+                else {
+                    status = "400 Bad Request";
+                    body = "Message field was not found.";
+                }
+            }
+            else {
+                status = "400 Bad Request";
+                body = "Could not read request body.";
+            }
+        }
+
         else {
             // Convert "/" into "/index.html"
             if (path == "/") {
